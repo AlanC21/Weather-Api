@@ -1,22 +1,46 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request, jsonify
 import requests
 
 app = Flask(__name__)
 
 @app.route('/')
 def index():
-    url = "https://ai-weather-by-meteosource.p.rapidapi.com/find_places"
+    return render_template('index.html')
 
-    querystring = {"text":"fishermans wharf","language":"en"}
+@app.route('/weather')
+def weather():
+    apikey = "51d207a89e98e05940c23a3de9b80a5c"
+    apiUrl = "http://api.openweathermap.org/data/2.5/weather?"
+    latitude = request.args.get('lat')
+    longitude = request.args.get('lon')
 
-    headers = {
-	"X-RapidAPI-Key": "cdeaaf4e02mshffcfe442dc1cba2p14985ajsndb3fa3629176",
-	"X-RapidAPI-Host": "ai-weather-by-meteosource.p.rapidapi.com"
-}
+    complete_url = apiUrl + f"appid={apikey}&lat={latitude}&lon={longitude}&units=metric&lang=es"
+    response = requests.get(complete_url)
+    data = response.json()
 
-    response = requests.get(url, headers=headers, params=querystring)
+    if data["cod"] != "404":
+        y = data["main"]
+        todayTemperature = y["temp"]
+        todayFeelsLike = y["feels_like"]
+        todayHumidity = y["humidity"]
+        z = data["weather"]
+        todayDescription = z[0]["description"]
+        todayIcon = z[0]["icon"]
+        w = data["clouds"]
+        todayClouds = w["all"]
 
-    return render_template('index.html', data=response.json())
+        weather_data = {
+            "temperature": round(todayTemperature),
+            "humidity": todayHumidity,
+            "description": todayDescription,
+            "feels_like": round(todayFeelsLike),
+            "icon": todayIcon,
+            "clouds": todayClouds
+        }
+
+        return jsonify(weather_data)
+    else:
+        return jsonify({"error": "City Not Found"})
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()
