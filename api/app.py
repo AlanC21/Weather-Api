@@ -14,7 +14,7 @@ def weather():
     latitude = request.args.get('lat')
     longitude = request.args.get('lon')
 
-    complete_url = apiUrl + f"appid={apikey}&lat={latitude}&lon={longitude}&units=metric&lang=es"
+    complete_url = apiUrl + f"appid={apikey}&lat={latitude}&lon={longitude}&units=metric&lang=en"
     response = requests.get(complete_url)
     data = response.json()
 
